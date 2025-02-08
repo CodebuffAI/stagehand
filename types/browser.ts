@@ -9,3 +9,7 @@ export interface BrowserResult {
   contextPath?: string;
   sessionId?: string;
 }
+
+export interface BrowserLaunchOptions {
+  executablePath?: string;
+}

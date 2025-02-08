@@ -1,31 +1,30 @@
-import Browserbase from "@browserbasehq/sdk";
+import { Browserbase } from "@browserbasehq/sdk";
 import { Page, BrowserContext } from "../types/page";
 import { z } from "zod";
 import { LLMProvider } from "../lib/llm/LLMProvider";
 import { LogLine } from "./log";
 import { AvailableModel, ClientOptions } from "./model";
 import { LLMClient } from "../lib/llm/LLMClient";
+import { BrowserLaunchOptions } from "./browser";
 
 export interface ConstructorParams {
-  env: "LOCAL" | "BROWSERBASE";
+  env?: "LOCAL" | "BROWSERBASE";
   apiKey?: string;
   projectId?: string;
   verbose?: 0 | 1 | 2;
   debugDom?: boolean;
   llmProvider?: LLMProvider;
+  llmClient?: LLMClient;
   headless?: boolean;
-  logger?: (message: LogLine) => void | Promise<void>;
-  domSettleTimeoutMs?: number;
+  logger?: (logLine: LogLine) => void;
   browserbaseSessionCreateParams?: Browserbase.Sessions.SessionCreateParams;
+  domSettleTimeoutMs?: number;
   enableCaching?: boolean;
   browserbaseSessionID?: string;
-  modelName?: AvailableModel;
-  llmClient?: LLMClient;
-  modelClientOptions?: ClientOptions;
-  /**
-   * Instructions for stagehand.
-   */
+  modelName?: string;
+  modelClientOptions?: Record<string, unknown>;
   systemPrompt?: string;
+  browserLaunchOptions?: BrowserLaunchOptions;
 }
 
 export interface InitOptions {

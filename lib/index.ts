@@ -6,14 +6,13 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 import { z } from "zod";
-import { BrowserResult } from "../types/browser";
+import { BrowserLaunchOptions, BrowserResult } from "../types/browser";
 import { LogLine } from "../types/log";
 import { GotoOptions } from "../types/playwright";
 import { Page, BrowserContext } from "../types/page";
 import {
   ActOptions,
   ActResult,
-  ConstructorParams,
   ExtractOptions,
   ExtractResult,
   InitFromPageOptions,
@@ -29,6 +28,7 @@ import { LLMProvider } from "./llm/LLMProvider";
 import { logLineToString } from "./utils";
 import { StagehandPage } from "./StagehandPage";
 import { StagehandContext } from "./StagehandContext";
+import { AvailableModel } from "../types/model";
 
 dotenv.config({ path: ".env" });
 
@@ -40,6 +40,26 @@ const BROWSERBASE_REGION_DOMAIN = {
   "ap-southeast-1": "wss://connect.apse1.browserbase.com",
 };
 
+export interface ConstructorParams {
+  env?: "LOCAL" | "BROWSERBASE";
+  apiKey?: string;
+  projectId?: string;
+  verbose?: 0 | 1 | 2;
+  debugDom?: boolean;
+  llmProvider?: LLMProvider;
+  llmClient?: LLMClient;
+  headless?: boolean;
+  logger?: (logLine: LogLine) => void;
+  browserbaseSessionCreateParams?: Browserbase.Sessions.SessionCreateParams;
+  domSettleTimeoutMs?: number;
+  enableCaching?: boolean;
+  browserbaseSessionID?: string;
+  modelName?: string;
+  modelClientOptions?: Record<string, unknown>;
+  systemPrompt?: string;
+  browserLaunchOptions?: BrowserLaunchOptions;
+}
+
 async function getBrowser(
   apiKey: string | undefined,
   projectId: string | undefined,
@@ -48,6 +68,7 @@ async function getBrowser(
   logger: (message: LogLine) => void,
   browserbaseSessionCreateParams?: Browserbase.Sessions.SessionCreateParams,
   browserbaseSessionID?: string,
+  browserLaunchOptions?: BrowserLaunchOptions,
 ): Promise<BrowserResult> {
   if (env === "BROWSERBASE") {
     if (!apiKey) {
@@ -250,6 +271,7 @@ async function getBrowser(
           "--disable-web-security",
         ],
         bypassCSP: true,
+        executablePath: browserLaunchOptions?.executablePath,
       },
     );
 
@@ -317,6 +339,7 @@ export class Stagehand {
   public verbose: 0 | 1 | 2;
   public llmProvider: LLMProvider;
   public enableCaching: boolean;
+  private browserLaunchOptions?: BrowserLaunchOptions;
 
   private apiKey: string | undefined;
   private projectId: string | undefined;
@@ -346,6 +369,7 @@ export class Stagehand {
       modelName,
       modelClientOptions,
       systemPrompt,
+      browserLaunchOptions,
     }: ConstructorParams = {
       env: "BROWSERBASE",
     },
@@ -367,7 +391,7 @@ export class Stagehand {
       try {
         // try to set a default LLM client
         this.llmClient = this.llmProvider.getClient(
-          modelName ?? DEFAULT_MODEL_NAME,
+          (modelName as AvailableModel) ?? DEFAULT_MODEL_NAME,
           modelClientOptions,
         );
       } catch {
@@ -380,6 +404,7 @@ export class Stagehand {
     this.browserbaseSessionCreateParams = browserbaseSessionCreateParams;
     this.browserbaseSessionID = browserbaseSessionID;
     this.userProvidedInstructions = systemPrompt;
+    this.browserLaunchOptions = browserLaunchOptions;
   }
 
   public get logger(): (logLine: LogLine) => void {
@@ -433,6 +458,7 @@ export class Stagehand {
         this.logger,
         this.browserbaseSessionCreateParams,
         this.browserbaseSessionID,
+        this.browserLaunchOptions,
       ).catch((e) => {
         console.error("Error in init:", e);
         const br: BrowserResult = {
