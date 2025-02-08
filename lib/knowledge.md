@@ -1,4 +1,24 @@
-# Browser Configuration
+# LLM Configuration
+
+## Backend Service Integration
+
+To use a backend service instead of direct LLM provider calls:
+
+```typescript
+const stagehand = new Stagehand({
+  modelClientOptions: {
+    backendUrl: "https://your-backend-service.com",
+  },
+});
+```
+
+The backend service must implement an OpenAI-compatible /chat/completions endpoint that:
+
+- Accepts the same request format as OpenAI
+- Returns responses in the same structure
+- Handles all OpenAI features: function calling, response formats, etc.
+
+## Browser Configuration
 
 ## Custom Browser Executable
 

@@ -8,6 +8,7 @@ import { LLMCache } from "../cache/LLMCache";
 import { AnthropicClient } from "./AnthropicClient";
 import { LLMClient } from "./LLMClient";
 import { OpenAIClient } from "./OpenAIClient";
+import { BackendLLMClient, BackendClientOptions } from "./BackendLLMClient";
 
 export class LLMProvider {
   private modelToProviderMap: { [key in AvailableModel]: ModelProvider } = {
@@ -36,16 +37,12 @@ export class LLMProvider {
     if (!this.enableCaching) {
       return;
     }
-
     this.logger({
       category: "llm_cache",
       message: "cleaning up cache",
       level: 1,
       auxiliary: {
-        requestId: {
-          value: requestId,
-          type: "string",
-        },
+        requestId: { value: requestId, type: "string" },
       },
     });
     this.cache.deleteCacheForRequestId(requestId);
@@ -53,9 +50,13 @@ export class LLMProvider {
 
   getClient(
     modelName: AvailableModel,
-    clientOptions?: ClientOptions,
+    clientOptions?: ClientOptions | BackendClientOptions,
   ): LLMClient {
-    const provider = this.modelToProviderMap[modelName];
+    // If a backendUrl is provided in clientOptions, override the provider to "backend"
+    let provider = this.modelToProviderMap[modelName];
+    if (clientOptions && "backendUrl" in clientOptions) {
+      provider = "backend";
+    }
     if (!provider) {
       throw new Error(`Unsupported model: ${modelName}`);
     }
@@ -76,6 +77,13 @@ export class LLMProvider {
           cache: this.cache,
           modelName,
           clientOptions,
+        });
+      case "backend":
+        return new BackendLLMClient({
+          enableCaching: this.enableCaching,
+          cache: this.cache,
+          modelName,
+          clientOptions: clientOptions as BackendClientOptions,
         });
       default:
         throw new Error(`Unsupported provider: ${provider}`);
