@@ -25,5 +25,8 @@ const StagehandConfig: ConstructorParams = {
   modelClientOptions: {
     apiKey: process.env.OPENAI_API_KEY,
   } /* Configuration options for the model client */,
+  browserLaunchOptions: {
+    executablePath: process.env.BROWSER_PATH, // Optional path to browser executable
+  },
 };
 export default StagehandConfig;
