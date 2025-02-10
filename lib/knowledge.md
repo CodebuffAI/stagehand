@@ -1,18 +1,21 @@
 # LLM Configuration
 
-## Backend Service Integration
+## Codebuff Service Integration
 
-To use a backend service instead of direct LLM provider calls:
+To use a Codebuff service (a proxy that implements an OpenAI-compatible /chat/completions endpoint) instead of direct LLM provider calls:
 
 ```typescript
 const stagehand = new Stagehand({
+  modelName: "codebuff-latest",
   modelClientOptions: {
-    backendUrl: "https://your-backend-service.com",
+    backendUrl: "https://api.codebuff.com", // Required
+    authToken: "your-auth-token", // Required
+    fingerprintId: "your-fingerprint-id", // Required
   },
 });
 ```
 
-The backend service must implement an OpenAI-compatible /chat/completions endpoint that:
+The Codebuff service must implement an OpenAI-compatible /chat/completions endpoint that:
 
 - Accepts the same request format as OpenAI
 - Returns responses in the same structure

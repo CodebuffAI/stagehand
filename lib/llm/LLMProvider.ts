@@ -3,12 +3,13 @@ import {
   AvailableModel,
   ClientOptions,
   ModelProvider,
+  CodebuffClientOptions,
 } from "../../types/model";
 import { LLMCache } from "../cache/LLMCache";
 import { AnthropicClient } from "./AnthropicClient";
 import { LLMClient } from "./LLMClient";
 import { OpenAIClient } from "./OpenAIClient";
-import { BackendLLMClient, BackendClientOptions } from "./BackendLLMClient";
+import { CodebuffClient } from "./CodebuffClient";
 
 export class LLMProvider {
   private modelToProviderMap: { [key in AvailableModel]: ModelProvider } = {
@@ -21,6 +22,7 @@ export class LLMProvider {
     "claude-3-5-sonnet-latest": "anthropic",
     "claude-3-5-sonnet-20240620": "anthropic",
     "claude-3-5-sonnet-20241022": "anthropic",
+    "codebuff-latest": "codebuff",
   };
 
   private logger: (message: LogLine) => void;
@@ -34,9 +36,8 @@ export class LLMProvider {
   }
 
   cleanRequestCache(requestId: string): void {
-    if (!this.enableCaching) {
-      return;
-    }
+    if (!this.enableCaching) return;
+
     this.logger({
       category: "llm_cache",
       message: "cleaning up cache",
@@ -50,40 +51,34 @@ export class LLMProvider {
 
   getClient(
     modelName: AvailableModel,
-    clientOptions?: ClientOptions | BackendClientOptions,
+    clientOptions?: ClientOptions,
   ): LLMClient {
-    // If a backendUrl is provided in clientOptions, override the provider to "backend"
+    // Determine provider based on model name and/or client options
     let provider = this.modelToProviderMap[modelName];
     if (clientOptions && "backendUrl" in clientOptions) {
-      provider = "backend";
+      provider = "codebuff";
     }
+
     if (!provider) {
       throw new Error(`Unsupported model: ${modelName}`);
     }
 
+    const commonOptions = {
+      logger: this.logger,
+      enableCaching: this.enableCaching,
+      cache: this.cache,
+      modelName,
+      clientOptions,
+    };
+
     switch (provider) {
       case "openai":
-        return new OpenAIClient({
-          logger: this.logger,
-          enableCaching: this.enableCaching,
-          cache: this.cache,
-          modelName,
-          clientOptions,
-        });
+        return new OpenAIClient(commonOptions);
       case "anthropic":
-        return new AnthropicClient({
-          logger: this.logger,
-          enableCaching: this.enableCaching,
-          cache: this.cache,
-          modelName,
-          clientOptions,
-        });
-      case "backend":
-        return new BackendLLMClient({
-          enableCaching: this.enableCaching,
-          cache: this.cache,
-          modelName,
-          clientOptions: clientOptions as BackendClientOptions,
+        return new AnthropicClient(commonOptions);
+      case "codebuff":
+        return new CodebuffClient({
+          clientOptions: clientOptions as CodebuffClientOptions,
         });
       default:
         throw new Error(`Unsupported provider: ${provider}`);

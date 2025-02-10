@@ -12,13 +12,25 @@ export const AvailableModelSchema = z.enum([
   "o1-mini",
   "o1-preview",
   "o3-mini",
+  "codebuff-latest",
 ]);
 
 export type AvailableModel = z.infer<typeof AvailableModelSchema>;
 
-export type ModelProvider = "openai" | "anthropic" | "backend";
+export type ModelProvider = "openai" | "anthropic" | "codebuff";
 
-export type ClientOptions = OpenAIClientOptions | AnthropicClientOptions;
+export interface CodebuffClientOptions {
+  backendUrl: string;
+  authToken: string;
+  fingerprintId: string;
+  maxRetries?: number;
+  timeout?: number;
+}
+
+export type ClientOptions =
+  | OpenAIClientOptions
+  | AnthropicClientOptions
+  | CodebuffClientOptions;
 
 export interface AnthropicJsonSchemaObject {
   definitions?: {
