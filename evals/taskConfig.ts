@@ -45,7 +45,6 @@ if (filterByEvalName && !tasksByName[filterByEvalName]) {
  * Determine which models to run the evaluations against.
  *
  * DEFAULT_EVAL_MODELS: The default set of models used for most categories.
- * EXPERIMENTAL_EVAL_MODELS: Additional models included if the category is "experimental".
  */
 const DEFAULT_EVAL_MODELS = process.env.EVAL_MODELS
   ? process.env.EVAL_MODELS.split(",")

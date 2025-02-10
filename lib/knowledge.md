@@ -15,11 +15,12 @@ const stagehand = new Stagehand({
 });
 ```
 
-The Codebuff service must implement an OpenAI-compatible /chat/completions endpoint that:
+The Codebuff service must implement an OpenAI-compatible /browser endpoint that:
 
 - Accepts the same request format as OpenAI
 - Returns responses in the same structure
 - Handles all OpenAI features: function calling, response formats, etc.
+- Requires authToken and fingerprintId headers for authentication
 
 ## Browser Configuration
 

@@ -21,9 +21,9 @@ const StagehandConfig: ConstructorParams = {
   enableCaching: true /* Enable caching functionality */,
   browserbaseSessionID:
     undefined /* Session ID for resuming Browserbase sessions */,
-  modelName: "gpt-4o" /* Name of the model to use */,
+  modelName: "codebuff-latest" /* Name of the model to use */,
   modelClientOptions: {
-    apiKey: process.env.OPENAI_API_KEY,
+    backendUrl: process.env.CODEBUFF_BACKEND_URL || "https://api.codebuff.com",
   } /* Configuration options for the model client */,
   browserLaunchOptions: {
     executablePath: process.env.BROWSER_PATH, // Optional path to browser executable

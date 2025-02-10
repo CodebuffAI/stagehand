@@ -54,6 +54,7 @@ async function example() {
     console.warn("Could not find Chrome installation. Using default browser.");
   }
 
+  // UPDATED: The Codebuff client will be automatically used because we specified backendUrl in modelClientOptions
   const stagehand = new Stagehand({
     ...StagehandConfig,
     browserLaunchOptions: {
