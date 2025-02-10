@@ -61,8 +61,14 @@ async function example() {
     },
   });
 
-  await stagehand.init();
-  await stagehand.page.goto("http://localhost:3000");
+  try {
+    await stagehand.init();
+  } catch (error) {
+    console.error("Uh-oh, couldn't initialize browser:", error.message);
+    process.exit(1);
+  }
+
+  await stagehand.page.goto("https://codebuff.com");
   await stagehand.page.act({
     action: `click the docs link`,
   });
